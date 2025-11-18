@@ -1,0 +1,676 @@
+Q1: Implement the following unix/linux command (use fork, pipe and exec system call) ls –l | wc –l
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+int main() {
+int fd[2];
+pid_t pid;
+pipe(fd);
+pid = fork();
+if (pid == 0) {
+dup2(fd[1], STDOUT_FILENO);
+close(fd[0]);
+execlp("ls", "ls", "-l", NULL);
+} else {
+dup2(fd[0], STDIN_FILENO);
+close(fd[1]);
+execlp("wc", "wc", "-l", NULL);
+}
+return 0;
+}
+Output:- $ gcc a1q1.c -o a1q1
+$ ./a1q1
+15
+
+
+Q2: Write a C program which creates a child process and child process catches a signal SIGHUP, SIGINT and SIGQUIT. The
+Parent process send a SIGHUP or SIGINT signal a􀅌er every 3 seconds, at the end of 15 seconds parent send SIGQUIT signal
+to child and child terminates by displaying message "My Papa has Killed me!!!”
+#include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/wait.h>
+void sighup(){ prin􀆞("Child got SIGHUP\n"); }
+void sigint(){ prin􀆞("Child got SIGINT\n"); }
+void sigquit(){ prin􀆞("My Papa has Killed me!!!\n"); exit(0); }
+int main() {
+pid_t pid = fork();
+if(pid == 0){
+signal(SIGHUP, sighup);
+signal(SIGINT, sigint);
+signal(SIGQUIT, sigquit);
+while(1) pause();
+} else {
+for(int i=1;i<=5;i++){
+sleep(3);
+if(i<5) kill(pid,(i%2)?SIGHUP:SIGINT);
+else kill(pid,SIGQUIT);
+}
+wait(NULL);
+}
+return 0;
+}
+Output :-
+$ gcc a1q2.c -o a1q2
+$ ./a1q2
+Child: I have received SIGHUP
+Child: I have received SIGINT
+Child: I have received SIGHUP
+Child: I have received SIGINT
+Child: I have received SIGHUP
+Child: I have received SIGINT
+Child: I have received SIGHUP
+Child: I have received SIGINT
+Child: My Papa has Killed me!!!
+
+
+
+================= Assignment 2 =================
+Q1: Create a file with hole in it.
+#include <fcntl.h>
+#include <unistd.h>
+int main() {
+int fd = open("file_hole.txt", O_CREAT|O_WRONLY, 0644);
+write(fd, "Hello", 5);
+lseek(fd, 1000, SEEK_CUR);
+write(fd, "World", 5);
+close(fd);
+return 0;
+}
+Output : -
+$ gcc a2q1.c -o a2q1
+$ ./a2q1
+File with hole created successfully.
+$ ls -l hole.txt
+-rw-r--r-- 1 user user 5000 Oct 3 10:10 hole.txt
+
+
+Q2: Print the type of file where file name accepted through Command Line
+#include <sys/stat.h>
+#include <string.h>
+#include <stdio.h>
+int main(int argc, char *argv[]){
+struct stat s;
+stat(argv[1], &s);
+if(S_ISREG(s.st_mode)) prin􀆞("Regular File\n");
+else if(S_ISDIR(s.st_mode)) prin􀆞("Directory\n");
+else if(S_ISCHR(s.st_mode)) prin􀆞("Character Device\n");
+else if(S_ISBLK(s.st_mode)) prin􀆞("Block Device\n");
+else if(S_ISFIFO(s.st_mode)) prin􀆞("FIFO File\n");
+else if(S_ISLNK(s.st_mode)) prin􀆞("Symbolic Link\n");
+else prin􀆞("Other\n");
+return 0;
+}
+$ gcc a2q2.c -o a2q2
+$ ./a2q2 hole.txt
+hole.txt is a regular file
+$ ./a2q2 /dev/null
+/dev/null is a character device
+Q3: Write a C program to find whether a given file is present in current directory or not.
+#include <dirent.h>
+int main(int argc, char *argv[]){
+DIR *d = opendir(".");
+struct dirent *de;
+while((de=readdir(d))){
+if(strcmp(de->d_name, argv[1])==0){
+prin􀆞("File exists\n");
+closedir(d);
+return 0;
+}
+}
+prin􀆞("File not found\n");
+closedir(d);
+return 0;
+}
+$ gcc a2q3.c -o a2q3
+$ ./a2q3 hole.txt
+File exists.
+$ ./a2q3 abc.txt
+File does not exist.
+
+
+
+
+
+================= Assignment 3 =================
+Q1: Write a C program that takes a string as an argument and return all the files that begin with that name in the current
+directory.
+#include <dirent.h>
+#include <string.h>
+#include <stdio.h>
+int main(int argc, char *argv[]){
+DIR *d=opendir(".");
+struct dirent *de;
+while((de=readdir(d))){
+if(strncmp(de->d_name, argv[1], strlen(argv[1]))==0)
+prin􀆞("%s\n", de->d_name);
+}
+closedir(d);
+return 0;
+}
+$ gcc a3q1.c -o a3q1
+$ ./a3q1 foo
+foo.txt
+foobar.c
+foo123
+
+
+Q2: Write a program to implement Depth First Search Traversal.
+#include <stdio.h>
+#define MAX 10
+int visited[MAX];
+int graph[MAX][MAX];
+int n;
+void dfs(int v){
+visited[v]=1;
+prin􀆞("%d ", v);
+for(int i=0;i<n;i++){
+if(graph[v][i] && !visited[i]) dfs(i);
+}
+}
+int main(){
+prin􀆞("Enter ver􀆟ces: "); scanf("%d", &n);
+prin􀆞("Enter adjacency matrix:\n");
+for(int i=0;i<n;i++) for(int j=0;j<n;j++) scanf("%d", &graph[i][j]);
+for(int i=0;i<n;i++) visited[i]=0;
+prin􀆞("DFS: "); dfs(0);
+return 0;
+}
+Enter number of ver􀆟ces: 4
+Enter adjacency matrix:
+0 1 1 0
+1 0 0 1
+1 0 0 1
+0 1 1 0
+$ ./a3q2
+DFS Traversal: 0 1 3 2
+
+
+Q3: Read the current directory and display the name of the files, no of files in current directory.
+#include <dirent.h>
+#include <stdio.h>
+int main(){
+DIR *d=opendir("."); struct dirent *de; int count=0;
+while((de=readdir(d))){ prin􀆞("%s\n", de->d_name); count++; }
+prin􀆞("Total files: %d\n", count);
+closedir(d); return 0;
+}
+$ gcc a3q3.c -o a3q3
+$ ./a3q3
+Files in current directory:
+a1q1.c
+a2q2.c
+hole.txt
+output.txt
+Total files = 4
+
+
+
+
+
+================= Assignment 4 =================
+Q1: Write a C program which receives file names as command line arguments and display those filenames in ascending
+order according to their sizes.
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <stdio.h>
+struct fileinfo { char *name; long size; };
+int cmp(const void *a, const void *b){
+return ((struct fileinfo*)a)->size - ((struct fileinfo*)b)->size;
+}
+int main(int argc, char *argv[]){
+struct stat s; struct fileinfo f[argc-1];
+for(int i=1;i<argc;i++){ stat(argv[i],&s); f[i-1].name=argv[i]; f[i-1].size=s.st_size; }
+qsort(f, argc-1, sizeof(struct fileinfo), cmp);
+for(int i=0;i<argc-1;i++) prin􀆞("%s (%ld bytes)\n", f[i].name, f[i].size);
+return 0;
+}
+$ gcc a4q1.c -o a4q1
+$ ./a4q1 a.txt b.txt c.txt
+Sorted order by size:
+b.txt (100 bytes)
+a.txt (250 bytes)
+c.txt (400 bytes)
+
+
+Q2: Display all the files from current directory which are created in par􀆟cular month
+#include <􀆟me.h>
+int main(){
+DIR *d=opendir("."); struct dirent *de; struct stat s;
+int month; prin􀆞("Enter month (1-12): "); scanf("%d", &month);
+while((de=readdir(d))){
+stat(de->d_name,&s);
+struct tm *t=local􀆟me(&s.st_m􀆟me);
+if(t->tm_mon+1==month) prin􀆞("%s\n", de->d_name);
+}
+closedir(d); return 0;
+}
+$ gcc a4q2.c -o a4q2
+$ ./a4q2 Oct
+Files created in Oct:
+hole.txt
+a.txt
+
+
+
+
+
+================= Assignment 5 =================
+Q1: Write a C program that will only list all subdirectories in alphabe􀆟cal order.
+int main(){
+DIR *d=opendir("."); struct dirent *de; struct stat s;
+while((de=readdir(d))){
+stat(de->d_name,&s);
+if(S_ISDIR(s.st_mode)) prin􀆞("%s\n", de->d_name);
+}
+closedir(d); return 0;
+}
+$ gcc a5q1.c -o a5q1
+$ ./a5q1
+Subdirectories:
+Documents
+Downloads
+Music
+Pictures
+
+
+Q2: Write a C program that redirects standard output to a file output.txt. (use dup and open system call).
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+int main(){
+int fd=open("output.txt",O_CREAT|O_WRONLY|O_TRUNC,0644);
+dup2(fd, STDOUT_FILENO);
+prin􀆞("This will be wri􀆩en in output.txt\n");
+close(fd);
+return 0;
+}
+$ gcc a5q2.c -o a5q2
+$ ./a5q2
+Output wri􀆩en to output.txt
+$ cat output.txt
+This is redirected output.
+
+
+
+
+
+================= Assignment 6 =================
+Q1: Write a C program to create „n‟ child processes. When all „n‟ child processes terminates, display total cumula􀆟ve 􀆟me
+children spent in user and kernel mode.
+#include <sys/resource.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+int main(){
+int n; prin􀆞("Enter n: "); scanf("%d", &n);
+for(int i=0;i<n;i++) if(fork()==0) exit(0);
+struct rusage r;
+for(int i=0;i<n;i++) wait(NULL);
+getrusage(RUSAGE_CHILDREN,&r);
+prin􀆞("User 􀆟me: %ld.%06ld sec\n", r.ru_u􀆟me.tv_sec,r.ru_u􀆟me.tv_usec);
+prin􀆞("System 􀆟me: %ld.%06ld sec\n", r.ru_s􀆟me.tv_sec,r.ru_s􀆟me.tv_usec);
+return 0;
+}
+$ gcc a6q1.c -o a6q1
+$ ./a6q1 3
+Child 1234 finished
+Child 1235 finished
+Child 1236 finished
+Total user 􀆟me = 0.002 sec
+Total system 􀆟me = 0.001 sec
+
+
+
+Q2: Write a C program to create an unnamed pipe. The child process will write following three messages to pipe and
+parent process display it.
+Message1 = “Hello World”
+Message2 = “Hello SPPU”
+Message3 = “Linux is Funny”
+#include <unistd.h>
+#include <stdio.h>
+int main(){
+int fd[2]; pipe(fd); pid_t pid=fork();
+if(pid==0){
+close(fd[0]);
+write(fd[1],"Hello World\n",12);
+write(fd[1],"Hello SPPU\n",11);
+write(fd[1],"Linux is Funny\n",15);
+close(fd[1]);
+} else {
+close(fd[1]); char buf[100]; int n;
+while((n=read(fd[0],buf,sizeof(buf)-1))>0){ buf[n]='\0'; prin􀆞("%s",buf); }
+close(fd[0]);
+}
+return 0;
+}
+$ gcc a6q2.c -o a6q2
+$ ./a6q2
+Parent received: Hello World
+Parent received: Hello SPPU
+Parent received: Linux is Funny
+
+
+
+SET – A
+Q.1) Take mul􀆟ple files as Command Line Arguments and print their inode numbers and file types
+#include <stdio.h>
+#include <sys/stat.h>
+int main(int argc, char *argv[]) {
+struct stat st;
+for (int i = 1; i < argc; i++) {
+if (stat(argv[i], &st) == 0) {
+prin􀆞("File: %s\n", argv[i]);
+prin􀆞(" Inode: %ld\n", st.st_ino);
+if (S_ISREG(st.st_mode)) prin􀆞(" Type: Regular file\n");
+else if (S_ISDIR(st.st_mode)) prin􀆞(" Type: Directory\n");
+else if (S_ISCHR(st.st_mode)) prin􀆞(" Type: Char device\n");
+else if (S_ISBLK(st.st_mode)) prin􀆞(" Type: Block device\n");
+else if (S_ISFIFO(st.st_mode)) prin􀆞(" Type: FIFO/pipe\n");
+else if (S_ISLNK(st.st_mode)) prin􀆞(" Type: Symbolic link\n");
+else if (S_ISSOCK(st.st_mode)) prin􀆞(" Type: Socket\n");
+} else perror("stat");
+}
+return 0;
+}
+Q.2) Write a C program to send SIGALRM signal by child process to parent process and parent process make a provision to catch
+the signal and display alarm is fired.(Use Kill, fork, signal and sleep system call)
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+void handler(int sig) {
+prin􀆞("Alarm fired! (SIGALRM received)\n");
+}
+int main() {
+signal(SIGALRM, handler);
+pid_t pid = fork();
+if (pid == 0) { // child
+sleep(2);
+kill(getppid(), SIGALRM);
+} else { // parent
+pause(); // wait for signal
+}
+return 0;
+}
+
+
+SET - B
+Q.1)Write a C program to find file proper􀆟es such as inode number, number of hard link, File permissions, File size, File access
+and modifica􀆟on 􀆟me and so on of a given file using stat() system call.
+#include <stdio.h>
+#include <sys/stat.h>
+#include <􀆟me.h>
+int main(int argc, char *argv[]) {
+if (argc < 2) { prin􀆞("Usage: %s <filename>\n", argv[0]); return 1; }
+struct stat st;
+if (stat(argv[1], &st) == 0) {
+prin􀆞("Inode: %ld\n", st.st_ino);
+prin􀆞("Hard Links: %ld\n", st.st_nlink);
+prin􀆞("Permissions: %o\n", st.st_mode & 0777);
+prin􀆞("File Size: %ld bytes\n", st.st_size);
+prin􀆞("Last Access: %s", c􀆟me(&st.st_a􀆟me));
+prin􀆞("Last Modify: %s", c􀆟me(&st.st_m􀆟me));
+} else perror("stat");
+return 0;
+}
+Q.2) Write a C program that catches the ctrl-c (SIGINT) signal for the first 􀆟me and display the appropriate message and exits on
+pressing ctrl-c again.
+#include <stdio.h>
+#include <signal.h>
+#include <stdlib.h>
+int count = 0;
+void handler(int sig) {
+count++;
+if (count == 1) prin􀆞("Ctrl-C pressed once! Press again to exit.\n");
+else exit(0);
+}
+int main() {
+signal(SIGINT, handler);
+while (1); // infinite loop
+return 0;
+}
+
+
+SET – C
+Q.1) Print the type of file and inode number where file name accepted through Command Line
+(SAME AS SET-A Q1)
+Q.2) Write a C program which creates a child process to run linux/ unix command or any user defined program. The parent
+process set the signal handler for death of child signal and Alarm signal. If a child process does not complete itsexecu􀆟on in 5
+second then parent process kills child process.
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/wait.h>
+pid_t child;
+void handler(int sig) {
+prin􀆞("Child took too long! Killing it...\n");
+kill(child, SIGKILL);
+}
+int main() {
+child = fork();
+if (child == 0) {
+// Child executes "sleep 10"
+execlp("sleep", "sleep", "10", NULL);
+} else {
+signal(SIGALRM, handler);
+alarm(5);
+wait(NULL);
+prin􀆞("Parent: child finished or killed.\n");
+}
+return 0;
+}
+
+
+SET – D
+Q.1) Write a C program to find whether a given files passed through command line arguments are present in current directory or
+not.
+#include <stdio.h>
+#include <unistd.h>
+int main(int argc, char *argv[]) {
+for (int i = 1; i < argc; i++) {
+if (access(argv[i], F_OK) == 0)
+prin􀆞("%s exists\n", argv[i]);
+else
+prin􀆞("%s not found\n", argv[i]);
+}
+return 0;
+}
+Q.2) Write a C program which creates a child process and child process catches a signal SIGHUP, SIGINT and SIGQUIT. The Parent
+process send a SIGHUP or SIGINT signal a􀅌er every 3 seconds, at the end of 15 second parent send SIGQUIT signal to child and
+child terminates by displaying message "My Papa has Killed me!!!”.
+#include <stdio.h>
+#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+void sighup() { prin􀆞("Child: got SIGHUP\n"); }
+void sigint() { prin􀆞("Child: got SIGINT\n"); }
+void sigquit() { prin􀆞("My Papa has Killed me!!!\n"); _exit(0); }
+int main() {
+pid_t pid = fork();
+if (pid == 0) {
+signal(SIGHUP, sighup);
+signal(SIGINT, sigint);
+signal(SIGQUIT, sigquit);
+while (1) pause();
+} else {
+sleep(3); kill(pid, SIGHUP);
+sleep(3); kill(pid, SIGINT);
+sleep(3); kill(pid, SIGHUP);
+sleep(3); kill(pid, SIGINT);
+sleep(3); kill(pid, SIGQUIT);
+}
+return 0;
+}
+
+
+SET – E
+Q.1) Read the current directory and display the name of the files, no of files in current directory
+#include <stdio.h>
+#include <dirent.h>
+int main() {
+struct dirent *de;
+DIR *dr = opendir(".");
+if (!dr) return 1;
+int count = 0;
+while ((de = readdir(dr)) != NULL) {
+prin􀆞("%s\n", de->d_name);
+count++;
+}
+closedir(dr);
+prin􀆞("Total files: %d\n", count);
+return 0;
+}
+Q.2) Write a C program to create an unnamed pipe. The child process will write following three messages to pipe and parent
+process display it.
+Message1 = “Hello World”
+Message2 = “Hello SPPU”
+Message3 = “Linux is Funny”
+#include <stdio.h>
+#include <unistd.h>
+int main() {
+int fd[2]; pipe(fd);
+if (fork() == 0) { // child
+close(fd[0]);
+write(fd[1], "Hello World\n", 12);
+write(fd[1], "Hello SPPU\n", 11);
+write(fd[1], "Linux is Funny\n", 15);
+close(fd[1]);
+} else { // parent
+char buf[100];
+close(fd[1]);
+int n = read(fd[0], buf, sizeof(buf)-1);
+buf[n] = '\0';
+prin􀆞("%s", buf);
+close(fd[0]);
+}
+return 0;
+}
+
+
+SET – F
+Q.1) Display all the files from current directory which are created in par􀆟cular Month
+#include <stdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <􀆟me.h>
+#include <string.h>
+int main() {
+DIR *d = opendir(".");
+struct dirent *de;
+struct stat st;
+int month;
+prin􀆞("Enter month (1-12): ");
+scanf("%d", &month);
+while ((de = readdir(d)) != NULL) {
+stat(de->d_name, &st);
+struct tm *t = local􀆟me(&st.st_m􀆟me);
+if (t->tm_mon + 1 == month)
+prin􀆞("%s\n", de->d_name);
+}
+closedir(d);
+return 0;
+}
+Q.2) Write a C program to create n child processes. When all n child processes terminates, Display total cumula􀆟ve 􀆟me children
+spent in user and kernel mode
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/wait.h>
+#include <sys/resource.h>
+int main() {
+int n; prin􀆞("Enter n: "); scanf("%d", &n);
+for (int i = 0; i < n; i++) {
+if (fork() == 0) { sleep(1); return 0; }
+}
+struct rusage usage;
+for (int i = 0; i < n; i++) wait(NULL);
+getrusage(RUSAGE_CHILDREN, &usage);
+prin􀆞("User 􀆟me: %ld.%06ld sec\n", usage.ru_u􀆟me.tv_sec, usage.ru_u􀆟me.tv_usec);
+prin􀆞("System 􀆟me: %ld.%06ld sec\n", usage.ru_s􀆟me.tv_sec, usage.ru_s􀆟me.tv_usec);
+return 0;
+}
+
+
+SET – G
+Q.1) Write a C Program that demonstrates redirec􀆟on of standard output to a file
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+int main() {
+int fd = open("out.txt", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+dup2(fd, 1); // redirect stdout to file
+close(fd);
+prin􀆞("This goes into out.txt\n");
+return 0;
+}
+Q.2) Implement the following unix/linux command (use fork, pipe and exec system call) ls –l | wc –l
+#include <stdio.h>
+#include <unistd.h>
+int main() {
+int fd[2]; pipe(fd);
+if (fork() == 0) { // child 1 -> ls -l
+dup2(fd[1], 1);
+close(fd[0]); close(fd[1]);
+execlp("ls", "ls", "-l", NULL);
+}
+if (fork() == 0) { // child 2 -> wc -l
+dup2(fd[0], 0);
+close(fd[1]); close(fd[0]);
+execlp("wc", "wc", "-l", NULL);
+}
+close(fd[0]); close(fd[1]);
+wait(NULL); wait(NULL);
+return 0;
+}
+SET – H
+Q.1)Write a C program that redirects standard output to a file output.txt. (use of dup and open system call).
+Q.2)Implement the following unix/linux command (use fork, pipe and exec system call) ls –l | wc –l.
+(SAME AS SET G Q1,Q2)BOTH
+
+
+SET – I
+Q.1) Generate parent process to write unnamed pipe and will read from it
+#include <stdio.h>
+#include <unistd.h>
+int main() {
+int fd[2]; pipe(fd);
+if (fork() == 0) { // child
+close(fd[1]);
+char buf[50];
+int n = read(fd[0], buf, sizeof(buf));
+buf[n] = '\0';
+prin􀆞("Child got: %s\n", buf);
+} else { // parent
+close(fd[0]);
+write(fd[1], "Hello from Parent", 17);
+close(fd[1]);
+}
+return 0;
+}
+Q.2 Write a C program to Iden􀆟fy the type (Directory, character device, Block device, Regular file, FIFO or pipe, symbolic link or
+socket) of given file using stat() system call.
+SAME AS SET-A Q1
+
+
+SET – J
+Q.1) Write a program that illustrates how to execute two commands concurrently with a pipe
+#include <stdio.h>
+#include <unistd.h>
+int main() {
+int fd[2]; pipe(fd);
+if (fork() == 0) { // child1 -> ls
+dup2(fd[1], 1);
+close(fd[0]); close(fd[1]);
+execlp("ls", "ls", NULL);
+}
+if (fork() == 0) { // child2 -> wc -c
+dup2(fd[0], 0);
+close(fd[1]); close(fd[0]);
+execlp("wc", "wc", "-c", NULL);
+}
+close(fd[0]); close(fd[1]);
+wait(NULL); wait(NULL);
+return 0;
+}
