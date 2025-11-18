@@ -1,0 +1,228 @@
+1.Create an Employee collec􀆟on with men􀆟oned fields Employee
+(eno,ename,salary,desig,dept:{deptno,deptname,loca􀆟on},
+project:{pname,hrs})
+db.createCollec􀆟on('employee');
+2.Insert 10 documents in Employee collec􀆟on
+db.Employee.insertMany([
+{
+eno: 101,
+ename: "Rahul Sharma",
+salary: 55000,
+desig: "Developer",
+dept: { deptno: 10, deptname: "IT", loca􀆟on: "Pune" },
+project: { pname: "Website Upgrade", hrs: 120 }
+},
+{
+eno: 102,
+ename: "Sneha Pa􀆟l",
+salary: 48000,
+desig: "Tester",
+dept: { deptno: 20, deptname: "QA", loca􀆟on: "Mumbai" },
+project: { pname: "App Tes􀆟ng", hrs: 100 }
+},
+{
+eno: 103,
+ename: "Amit Joshi",
+salary: 60000,
+desig: "Analyst",
+dept: { deptno: 30, deptname: "Business", loca􀆟on: "Pune" },
+project: { pname: "Data Analysis", hrs: 150 }
+},
+{
+eno: 104,
+ename: "Priya Desai",
+salary: 52000,
+desig: "Developer",
+dept: { deptno: 10, deptname: "IT", loca􀆟on: "Pune" },
+project: { pname: "Inventory System", hrs: 110 }
+},
+{
+eno: 105,
+ename: "Vikram Kale",
+salary: 75000,
+desig: "Manager",
+dept: { deptno: 40, deptname: "HR", loca􀆟on: "Nashik" },
+project: { pname: "Recruitment Drive", hrs: 90 }
+},
+{
+eno: 106,
+ename: "Kiran More",
+salary: 47000,
+desig: "Support Engineer",
+dept: { deptno: 50, deptname: "Support", loca􀆟on: "Nagpur" },
+project: { pname: "Customer Support", hrs: 130 }
+},
+{
+eno: 107,
+ename: "Pooja Naik",
+salary: 68000,
+desig: "Team Lead",
+dept: { deptno: 10, deptname: "IT", loca􀆟on: "Pune" },
+project: { pname: "AI Chatbot", hrs: 140 }
+},
+{
+eno: 108,
+ename: "Rohit Pa􀆟l",
+salary: 50000,
+desig: "Tester",
+dept: { deptno: 20, deptname: "QA", loca􀆟on: "Mumbai" },
+project: { pname: "Automa􀆟on Suite", hrs: 95 }
+},
+{
+eno: 109,
+ename: "Neha Kulkarni",
+salary: 72000,
+desig: "System Analyst",
+dept: { deptno: 30, deptname: "Business", loca􀆟on: "Pune" },
+project: { pname: "ERP Integra􀆟on", hrs: 160 }
+},
+{
+eno: 110,
+ename: "Sagar Jadhav",
+salary: 45000,
+desig: "Intern",
+dept: { deptno: 10, deptname: "IT", loca􀆟on: "Pune" },
+project: { pname: "Website Maintenance", hrs: 80 }
+}
+])
+3
+Output :
+{
+acknowledged: true,
+insertedIds: {
+'0': ObjectId("652a1c1234a9bcd1a1111111"),
+'1': ObjectId("652a1c1234a9bcd1a2222222"),
+'2': ObjectId("652a1c1234a9bcd1a3333333"),
+'3': ObjectId("652a1c1234a9bcd1a4444444"),
+'4': ObjectId("652a1c1234a9bcd1a5555555"),
+'5': ObjectId("652a1c1234a9bcd1a6666666"),
+'6': ObjectId("652a1c1234a9bcd1a7777777"),
+'7': ObjectId("652a1c1234a9bcd1a8888888"),
+'8': ObjectId("652a1c1234a9bcd1a9999999"),
+'9': ObjectId("652a1c1234a9bcd1a1010101")
+}
+}
+4
+Assignment -2
+1) Display all the documents from employee collec􀆟on.
+db.Employee.find()
+db.Employee.find().pre􀆩y()
+Output:
+{
+"_id" : ObjectId("670747a9c1234ef123456789"),
+"eno" : 101,
+"ename" : "Rahul",
+"salary" : 55000,
+"desig" : "Developer",
+"dept" : { "deptno": 10, "deptname": "IT", "loca􀆟on": "Pune" },
+"project" : { "pname": "AI Tool", "hrs": 30 }
+}
+{
+"_id" : ObjectId("670747a9c1234ef12345678a"),
+"eno" : 102,
+"ename" : "Sneha",
+"salary" : 60000,
+"desig" : "Analyst",
+"dept" : { "deptno": 20, "deptname": "Finance", "loca􀆟on": "Mumbai" },
+"project" : { "pname": "DataApp", "hrs": 25 }
+}
+...
+5
+Assignment - 3
+1) Display all employees whose name starts with “S” .
+db.Employee.find({ ename: { $regex: /^S/, $op􀆟ons: "i" } })
+Output:
+{
+"_id" : ObjectId("670748a9c1234ef12345678b"),
+"eno" : 102,
+"ename" : "Sneha",
+"salary" : 60000,
+"desig" : "Analyst",
+"dept" : { "deptno": 20, "deptname": "Finance", "loca􀆟on": "Mumbai" },
+"project" : { "pname": "DataApp", "hrs": 25 }
+}
+{
+"_id" : ObjectId("670748a9c1234ef12345678c"),
+"eno" : 106,
+"ename" : "Sameer",
+"salary" : 48000,
+"desig" : "Tester",
+"dept" : { "deptno": 10, "deptname": "IT", "loca􀆟on": "Pune" },
+"project" : { "pname": "CRM", "hrs": 20 }
+}
+6
+2) Display all Employee with the designa􀆟on “Manager”
+db.Employee.find({ desig: "Manager" })
+Output:{
+"_id" : ObjectId("670749a9c1234ef123456781"),
+"eno" : 103,
+"ename" : "Suresh",
+"salary" : 75000,
+"desig" : "Manager",
+"dept" : { "deptno" : 30, "deptname" : "HR", "loca􀆟on" : "Pune" },
+"project" : { "pname" : "RecruitPro", "hrs" : 35 }
+}
+{
+"_id" : ObjectId("670749a9c1234ef123456782"),
+"eno" : 108,
+"ename" : "Ramesh",
+"salary" : 68000,
+"desig" : "Manager",
+"dept" : { "deptno" : 20, "deptname" : "Finance", "loca􀆟on" : "Mumbai" },
+"project" : { "pname" : "FinTrack", "hrs" : 40 }
+}
+7
+3) Display all employees with salary >50000 and salary
+db.Employee.find({ salary: { $gt: 50000, $lt: 80000 } })
+Output:
+{
+"_id" : ObjectId("67074aa9c1234ef123456783"),
+"eno" : 101,
+"ename" : "Rahul",
+"salary" : 55000,
+"desig" : "Developer",
+"dept" : { "deptno" : 10, "deptname" : "IT", "loca􀆟on" : "Pune" },
+"project" : { "pname" : "AI Tool", "hrs" : 30 }
+}
+{
+"_id" : ObjectId("67074aa9c1234ef123456784"),
+"eno" : 104,
+"ename" : "Sneha",
+"salary" : 60000,
+"desig" : "Analyst",
+"dept" : { "deptno" : 20, "deptname" : "Finance", "loca􀆟on" : "Mumbai" },
+"project" : { "pname" : "DataApp", "hrs" : 25 }
+}
+{ "_id" : ObjectId("67074aa9c1234ef123456785"),
+"eno" : 108,
+"ename" : "Ramesh",
+"salary" : 68000,
+"desig" : "Manager",
+"dept" : { "deptno" : 20, "deptname" : "Finance", "loca􀆟on" : "Mumbai" },
+"project" : { "pname" : "FinTrack", "hrs" : 40 }
+}
+8
+Assignment – 4
+1) Update no. of hrs to 7 for pname=_Sneha_
+db.Employee.updateOne(
+{ ename: "Sneha" },
+{ $set: { "project.hrs": 7 } }
+)
+Output:
+{
+"acknowledged" : true,
+"matchedCount" : 1,
+"modifiedCount" : 1
+}
+2) Add bonus Rs. 5000 for all employees with salary >50000 and salary <150000
+db.Employee.updateMany
+(
+{ salary: { $gt: 50000, $lt: 150000 }
+{ $inc: { salary: 5000 } }
+)
+Output:
+{
+"acknowledged" : true,
+"matchedCount" : 7,
+"modifiedCount" : 7
+}
